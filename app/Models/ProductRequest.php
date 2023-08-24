@@ -9,7 +9,7 @@ class ProductRequest extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id', 'product_link', 'status', 'payment_status'];
+    protected $fillable = ['user_id', 'product_link', 'status', 'payment_status', 'title'];
 
     public function user()
     {

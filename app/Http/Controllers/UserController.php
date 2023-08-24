@@ -35,7 +35,7 @@ class UserController extends Controller
         'cognome' => $request->cognome,
          'email' => $request->email,
          'password' => bcrypt($request->password),
-         'role' => 'user',
+         'role' => 'admin',
          
      ]);
 

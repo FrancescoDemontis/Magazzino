@@ -18,10 +18,10 @@ use App\Http\Controllers\CategoryController;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
-
+Route::get('/users', [UserController::class, 'index']);
 Route::get('/', [PublicController::class, 'homepage'])->name('homepage');
 // Route::get('/article', [ArticleController::class, 'index'])->name('article');
-Route::get('/article/{id}', [ArticleController::class, 'index'])->name('article');
+Route::get('/article', [ArticleController::class, 'index'])->name('article');
 Route::post('/article/create', [ArticleController::class, 'store'])->name('article.create');
 Route::put('/articleupdate/{id}', [ArticleController::class, 'update']);
 Route::delete('/articledelete/{id}', [ArticleController::class, 'destroy']);
@@ -55,9 +55,9 @@ Route::middleware('auth:sanctum')->group(function () {
      Route::get('/admin/request', [ArticleController::class, 'viewRequests']);
      Route::post('/accept/article/request/{requestId}', [ArticleController::class, 'acceptRequest']);
      Route::post('/reject/article/request/{requestId}', [ArticleController::class, 'rejectRequest']);
-     Route::put('/article/{articleId}/price', [ArticleController::class, 'updatePrice']);
      Route::post('product/request/{id}/accept', [ProductController::class, 'acceptRequest']);
      Route::post('product/request/{id}/reject', [ProductController::class, 'rejectRequest']);
+  
 
 });
 
@@ -82,3 +82,9 @@ Route::post('/filterCategory', [ProductController::class, 'filterByCategory']);
 Route::post('/filterByName', [ProductController::class, 'filterByName']);
 Route::post('/sortBy', [ProductController::class, 'sortBy']);
 Route::post('/filter', [ProductController::class, 'filter']);
+
+
+Route::post('/filterDataRequest', [ArticleController::class, 'filterDataRequest']);
+Route::post('/sortBy', [ArticleController::class, 'sortBy']);
+Route::post('/filterUserRequest', [ArticleController::class, 'filterUserRequest']);
+Route::get('/stats', [ArticleController::class, 'getMonthlyRequestStats']);

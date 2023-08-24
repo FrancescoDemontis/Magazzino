@@ -10,7 +10,7 @@ class ArticleRequest extends Model
     use HasFactory;
 
 
-    protected $fillable = ['user_id', 'article_id','price', 'verified'];
+    protected $fillable = ['user_id', 'article_id','price', 'verified','date'];
 
     public function user()
     {

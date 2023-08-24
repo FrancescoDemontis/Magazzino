@@ -19,6 +19,7 @@ return new class extends Migration
             $table->longText('description');
             $table->text('img')->nullable()->default(null);
             $table->bigInteger('price');
+            $table->string('category');
             $table->boolean('common')->default(false);
             // $table->unsignedBigInteger('user_id')->nullable();
             // $table->foreign('user_id')->references('id')->on('users')->onDelete('SET NULL');

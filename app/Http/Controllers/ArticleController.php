@@ -5,8 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Article;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
-
+use Illuminate\Http\File;
 use App\Models\ArticleRequest;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Storage;
@@ -28,37 +29,40 @@ class ArticleController extends Controller
             'description' => 'nullable|max:500',
             'img' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
             'price' => 'required',
-            'category_id' => 'required|exists:categories,id', // Aggiungi la validazione della categoria
+            'category' => 'required|exists:categories',
         ]);
-    
-        $path = Storage::putFileAs('public/images', $request->file('images'), 'pippo.jpg');
+        
+        $nome= 'pippo'.strval(time()).'.jpg';
+        $path = Storage::putFileAs('public/images', $request->file('img'),$nome );
+   
     
         $articolo = new Article();
         $articolo->title = $request->input('title');
         $articolo->subtitle = $request->input('subtitle');
         $articolo->content = $request->input('content');
         $articolo->description = $request->input('description');
-        $articolo->img = $path; 
+        $articolo->img = $path;
         $articolo->price = $request->input('price');
-        $articolo->category_id = $request->input('category_id'); // Assegna la categoria
-    
-        $path = Storage::putFileAs('public/images', $request->file('img'), 'pippo.jpg');
-
-        // ...
-    
-        // Creazione di un nuovo articolo nel database con il percorso dell'immagine
-        $articolo = new Article();
-        $articolo->title = $request->input('title');
-        // ... altre proprietà
-        $articolo->img = $path = ('public/images');
+        $articolo->category = $request->input('category');
+      
+        // $save->path = $path;
+ 
+        // $save->save();
+        $myPublicFolder = public_path('https://magazzino-api.v-net.it/storage/images');
+        $savePath = public_path('https://magazzino-api.v-net.it/storage/images');
+        $path = $savePath;
         $articolo->save();
-        return response()->json(['message' => 'Articolo creato con successo'], 201);
+    
+        return response()->json(['message' => 'Articolo creato con successo'], ['image' => $articolo->img], 201);
+    
     }
+    
     public function richiesta(Request $request)
     {
         $request->validate([
             'article_id' => 'required|exists:articles,id',
-            'price' => 'required', // Aggiunto campo price alla validazione
+            'user_id' => 'required',
+            'price' => 'required', 
             'verified' => 'required',
         ]);
     
@@ -66,7 +70,7 @@ class ArticleController extends Controller
         $articleRequest = new ArticleRequest();
         $articleRequest->user_id = $request->user()->id;
         $articleRequest->article_id = $request->input('article_id');
-        $articleRequest->price = $request->input('price'); // Aggiunto il prezzo alla richiesta
+        $articleRequest->price = $request->input('price');
         $articleRequest->verified = false;
         $articleRequest->save();
     
@@ -117,22 +121,6 @@ public function rejectRequest($requestId)
     } catch (\Exception $e) {
         \Log::error("Errore durante il rifiuto della richiesta: " . $e->getMessage());
         return response()->json(['error' => 'Errore durante il rifiuto della richiesta'], 500);
-    }
-}
-
-    public function updatePrice(Request $request, $articleId)
-{
-    try {
-        // Verifica se l'utente è un amministratore (implementa questa logica se necessario)
-
-        $article = Article::findOrFail($articleId);
-        $article->price = $request->input('price');
-        $article->save();
-     
-        return response()->json(['message' => 'Prezzo aggiornato con successo']);
-    } catch (\Exception $e) {
-        \Log::error("Errore durante l'aggiornamento del prezzo: " . $e->getMessage());
-        return response()->json(['error' => 'Errore durante l\'aggiornamento del prezzo'], 500);
     }
 }
 
@@ -217,25 +205,85 @@ public function rejectRequest($requestId)
         ], 200);
     }
     
+    public function filterDataRequest(Request $request)
+    {
+        $userFilter = $request->input('userFilter');
+        $dateFilter = $request->input('dateFilter');
+        $orderBy = $request->input('orderBy');
+        $orderDirection = $request->input('orderDirection');
 
-    // public function articleSearch(Request $request, $id){
+        $query = ArticleRequest::query();
 
+        if ($userFilter) {
+            $query->where('user_name', 'like', '%' . $userFilter . '%');
+        }
 
-    //     $articolo = Article::find($id);
-    //     if (!$articolo) {
-    //         return response()->json([
-    //             'message' => 'Article Not Found.'
-    //         ], 404);
-    //     }
+        if ($dateFilter) {
+            $query->whereDate('date', $dateFilter);
+        }
+
+        if ($orderBy && $orderDirection) {
+            $query->orderBy($orderBy, $orderDirection);
+        }
+
+        $filteredRequests = $query->get();
+
+        return response()->json(['requests' => $filteredRequests]);
+    }
+
+    public function sortBy(Request $request)
+    {
+        $orderBy = $request->input('orderBy'); // 'name' o 'date'
+        $orderDirection = $request->input('orderDirection'); // 'asc' o 'desc'
+        
+        $query = ArticleRequest::query();
+
+        // Implementa la logica per l'ordinamento
+        if ($orderBy && $orderDirection) {
+            $query->orderBy($orderBy, $orderDirection);
+        }
+
+        $sortedRequests = $query->get();
+
+        return response()->json(['requests' => $sortedRequests]);
+    }
+
+    public function filterUserRequest(Request $request)
+    {
+        $userFilter = $request->input('userFilter');
+
+        $query = ArticleRequest::query();
+
+        // Implementa la logica per il filtraggio per utente
+        if ($userFilter) {
+            $query->where('user_name', 'like', '%' . $userFilter . '%');
+        }
+
+        $filteredRequests = $query->get();
+
+        return response()->json(['requests' => $filteredRequests]);
+    }
+
+   
+    public function getMonthlyRequestStats()
+    {
+        $year = date('Y');
+        $stats = [];
+
+        for ($month = 1; $month <= 12; $month++) {
+            $count = DB::table('article_requests')
+                ->whereYear('created_at', $year)
+                ->whereMonth('created_at', $month)
+                ->count();
+
+            $monthName = date("F", mktime(0, 0, 0, $month, 1));
+            $stats[] = ['month' => $monthName, 'count' => $count];
+        }
+
+        return response()->json(['stats' => $stats]);
+    }
     
-    //     // Return Json Response
-    //     return response()->json([
-    //         'articolo' => $articolo
-    //     ], 200);
-
-    //     $query = $request->input('query');
-    //     $articles = Article::search($query)->where('is_accepted' , true)->get();
-
-
-    // }
 }
+
+    
+

@@ -7,19 +7,17 @@ use App\Models\Article;
 use Illuminate\Http\Request;
 use App\Models\ProductRequest;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\ProductRequestsExport;
 
 
 class ProductController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        $orders = ProductRequest::all(); // Assumendo che il tuo modello si chiami "Order"
-    
+        $orders = ProductRequest::all(); 
+        
         return response()->json($orders);
     }
     
@@ -34,12 +32,14 @@ class ProductController extends Controller
     public function submitRequest(Request $request)
     {
         $request->validate([
-            'productLink' => 'required|url', 
+            'productLink' => 'required|url',
+            'title' => 'required',
         ]);
 
         $productRequest = new ProductRequest([
             'user_id' => Auth::user()->id,
             'product_link' => $request->input('productLink'),
+            'title' => $request->input('title'),
             'status' => 'Pending',
             'payment_status' => 'Pending',
         ]);
