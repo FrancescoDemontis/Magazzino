@@ -18,7 +18,7 @@ class Article extends Model
         'img',
         'price',
         'common',
-        'category_id'
+        'category'
     ];
 
     public function requests()
@@ -29,6 +29,11 @@ class Article extends Model
     {
         return $this->belongsTo(Category::class);
     }
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+    
     
 
 

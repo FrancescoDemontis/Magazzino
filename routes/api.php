@@ -22,7 +22,7 @@ Route::get('/users', [UserController::class, 'index']);
 Route::get('/', [PublicController::class, 'homepage'])->name('homepage');
 // Route::get('/article', [ArticleController::class, 'index'])->name('article');
 Route::get('/article', [ArticleController::class, 'index'])->name('article');
-Route::post('/article/create', [ArticleController::class, 'store'])->name('article.create');
+Route::post('/article/create', [ArticleController::class, 'store']);
 Route::put('/articleupdate/{id}', [ArticleController::class, 'update']);
 Route::delete('/articledelete/{id}', [ArticleController::class, 'destroy']);
 Route::get('/article/detail/{article_id}', [ArticleController::class, 'show'])->name('article.detail');

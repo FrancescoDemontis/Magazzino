@@ -20,60 +20,42 @@ class ArticleController extends Controller
         return response()->json($article);
     }
 
+
+
     public function store(Request $request)
     {
-        $request->validate([
-            'title' => 'required|max:255',
-            'subtitle' => 'nullable|max:255',
-            'content' => 'required',
-            'description' => 'nullable|max:500',
-            'img' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'price' => 'required',
-            'category' => 'required|exists:categories',
-        ]);
-        
-        $nome= 'pippo'.strval(time()).'.jpg';
-        $path = Storage::putFileAs('public/images', $request->file('img'),$nome );
-   
+        $nome = 'pippo' . strval(time()) . '.jpg';
+        $path = Storage::putFileAs("/storage/images", $request->img, $nome);
     
-        $articolo = new Article();
-        $articolo->title = $request->input('title');
-        $articolo->subtitle = $request->input('subtitle');
-        $articolo->content = $request->input('content');
-        $articolo->description = $request->input('description');
-        $articolo->img = $path;
-        $articolo->price = $request->input('price');
-        $articolo->category = $request->input('category');
       
-        // $save->path = $path;
- 
-        // $save->save();
-        $myPublicFolder = public_path('https://magazzino-api.v-net.it/storage/images');
-        $savePath = public_path('https://magazzino-api.v-net.it/storage/images');
-        $path = $savePath;
+        $articolo = Article::create([
+            'title' => $request->title,
+            'subtitle' => $request->subtitle,
+            'content' => $request->content,
+            'description' => $request->description,
+            'img' => 'storage/images' . $nome, 
+            'price' => $request->price,
+            'category' => $request->category,
+        ]);
+
         $articolo->save();
     
-        return response()->json(['message' => 'Articolo creato con successo'], ['image' => $articolo->img], 201);
-    
+        return response()->json(['message' => 'Articolo creato con successo']);
     }
+    
     
     public function richiesta(Request $request)
     {
-        $request->validate([
-            'article_id' => 'required|exists:articles,id',
-            'user_id' => 'required',
-            'price' => 'required', 
-            'verified' => 'required',
-        ]);
-    
         // Salva la richiesta nell'entità 'requests'
-        $articleRequest = new ArticleRequest();
-        $articleRequest->user_id = $request->user()->id;
-        $articleRequest->article_id = $request->input('article_id');
-        $articleRequest->price = $request->input('price');
-        $articleRequest->verified = false;
+        $articleRequest = ArticleRequest::create([
+            'user_id' => $request->user_id,
+            'article_id' => $request->article_id,
+            'price' => $request->price,
+            'verified' => false,
+        ]);
+            
+           
         $articleRequest->save();
-    
         return response()->json(['message' => 'Richiesta effettuata con successo']);
     }
     
@@ -90,6 +72,7 @@ class ArticleController extends Controller
         }
     }
 
+    
     public function acceptRequest($requestId)
 {
     try {

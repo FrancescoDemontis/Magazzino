@@ -52,9 +52,13 @@ class User extends Authenticatable
         return $this->hasMany(Article::class);
     } 
    
-public function productRequests()
-{
-    return $this->hasMany(ProductRequest::class);
-}
+        public function productRequests()
+        {
+            return $this->hasMany(ProductRequest::class);
+        }
+        public function articleRequests()
+        {
+            return $this->hasMany(ArticletRequest::class);
+        }
 
 }

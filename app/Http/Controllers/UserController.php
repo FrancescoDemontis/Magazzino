@@ -48,27 +48,27 @@ class UserController extends Controller
  
  public function login(Request $request)
  {
-
-    
      $request->validate([
          'email' => 'required|string|email',
          'password' => 'required|string',
      ]);
-     //$request only stiamo dicendo ch ei campi sono unicamente i seguenti 
+ 
      $credentials = $request->only('email', 'password');
-     //effettuiamo un controllo che ci permette di avere il token di accesso se le credenziali sono corrette e corrispondono ai dati che ci sono nel db
+ 
      if (Auth::attempt($credentials)) {
          $user = Auth::user();
          $token = $user->createToken('AuthToken')->plainTextToken;
-         // Restituise l'utente autenticato come risposta
-         return response([  'token' => $token], 200);
+         
+         return response([
+             'token' => $token,
+             'user_id' => $user->id,  // Aggiungiamo l'ID dell'utente alla risposta
+             'user' => $user,  // Aggiungiamo anche tutti i dettagli dell'utente alla risposta, se necessario
+         ], 200);
      } else {
-         // Restituisce una risposta di errore se l'utente non è autenticato
          return response()->json(['message' => 'Credenziali non valide'], 401);
      }
+ }
  
- 
-    }
 
     public function auth()
     {
